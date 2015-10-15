@@ -1,0 +1,18 @@
+ul.menu {
+    padding: 0;
+    margin: 0;
+}
+
+ul.menu > li {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    margin-bottom: -1px;
+    background-color: white;
+    border: 1px solid #ddd;
+}
+
+ul.menu > li > a {
+    color: inherit;
+    text-decoration: none;
+}

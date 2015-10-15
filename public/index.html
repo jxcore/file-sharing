@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://ogp.me/ns/fb#">
+    <head>
+        <title> Tic tac toe </title>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="fragment" content="!" />
+
+        <!-- build:css ./css/all.min.css -->
+        <link rel="stylesheet" type="text/css" href="./bower_components/bootstrap/dist/css/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="./css/site.css" />
+        <link rel="stylesheet" type="text/css" href="./css/directives/cd-loading-indicator.css">
+        <!-- endbuild -->
+    </head>
+    <body>
+        <!-- loading indicator -->
+        <div class="cd-loading-indicator">
+            <span></span>
+        </div>
+
+        <!-- view -->
+        <div ui-view></div>
+
+        <!-- cordova -->
+        <script type="text/javascript" src="../../cordova.js"></script>
+        <script type="text/javascript" src="../../jxcore.js"></script>
+
+        <!-- build:js ./js/components.min.js -->
+        <script src="./shared_components/js/utils.js"></script>
+        <script src="./shared_components/js/enums.js"></script>
+        <script src="./shared_components/js/async.js"></script>
+        <script src="./bower_components/jquery/dist/jquery.js"></script>
+        <script src="./bower_components/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="./bower_components/angular/angular.js"></script>
+        <!-- endbuild -->
+
+        <!-- build:js ./js/external-modules.min.js -->
+        <script src="./bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+        <script src="./bower_components/angular-resource/angular-resource.js"></script>
+        <script src="./bower_components/angular-animate/angular-animate.js"></script>
+        <script src="./bower_components/angular-sanitize/angular-sanitize.js"></script>
+        <script src="./bower_components/angular-socket-io/socket.js"></script>
+        <!-- endbuild -->
+
+        <!-- build:js ./js/custom-modules.min.js -->
+        <script src="./modules.js"></script>
+        <!-- endbuild -->
+    </body>
+</html>

@@ -1,0 +1,22 @@
+button,
+input[type="button"],
+input[type="submit"] {
+    border: solid 2px #272822;
+    background-color: white;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px 8px 3px 8px;
+    font-size: 16px;
+}
+
+button:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled {
+    color: #878984;
+    border-color: #878984;
+}
+
+input[type="submit"],
+button[type="submit"] {
+    margin-top: 10px;
+}

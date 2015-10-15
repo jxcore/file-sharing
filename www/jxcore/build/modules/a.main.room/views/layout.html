@@ -1,0 +1,45 @@
+<div ng-if="!game.started">
+    <table>
+        <tr>
+            <th>Width</th>
+            <td ng-bind="game.width"></td>
+        </tr>
+        <tr>
+            <th>Height</th>
+            <td ng-bind="game.height"></td>
+        </tr>
+        <tr>
+            <th>W. score</th>
+            <td ng-bind="game.winningScore"></td>
+        </tr>
+        <tr>
+            <th>Players joined</th>
+            <td ng-bind="game.players.length"></td>
+        </tr>
+        <tr>
+            <th>Max players</th>
+            <td ng-bind="game.maxPlayers"></td>
+        </tr>
+    </table>
+    <br/>
+    <div>
+        <button type="button" ng-click="start()">Start</button>
+    </div>
+</div>
+<div ng-if="game.started">
+    <h3>Your letter is "{{letters[meIndex]}}"</h3>
+    <div>
+        <cd-xox
+        me-index="meIndex"
+        dim-width="game.width"
+        dim-height="game.height"
+        winning-score="game.winningScore"
+        turn-index="game.turnIndex"
+        letters="letters"
+        on-init="init"
+        ></cd-xox>
+    </div>
+</div>
+<div ng-if="over">
+    <a ui-sref="^.find">Find or create another game</a>
+</div>

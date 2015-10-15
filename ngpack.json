@@ -1,0 +1,6 @@
+{
+    "public": "./public",
+    "modules": "./modules",
+    "output": "./public/modules.js",
+    "relative": true
+}

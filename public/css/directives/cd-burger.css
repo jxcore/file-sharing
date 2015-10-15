@@ -1,0 +1,68 @@
+.cd-burger {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+.cd-burger > .cd-burger-menu {
+    overflow: hidden;
+    border-right: 1px solid #e5e5e5;
+    height: 100%;
+}
+
+.cd-burger > .cd-burger-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-transition: left 0.2s ease-in-out, margin 0.1s ease-in-out;
+    -moz-transition: left 0.2s ease-in-out, margin 0.1s ease-in-out;
+    -o-transition: left 0.2s ease-in-out, margin 0.1s ease-in-out;
+    transition: left 0.2s ease-in-out, margin 0.1s ease-in-out;
+    background-color: white;
+    border-left: solid 1px #ddd;
+}
+
+.cd-burger.expanded > .cd-burger-content {
+    left: 100%;
+    margin-left: -42px;
+}
+
+.cd-burger > .cd-burger-content > .cd-burger-header {
+    overflow: hidden;
+    height: 50px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.cd-burger > .cd-burger-content > .cd-burger-header > .cd-burger-header-button {
+    float: left;
+    padding: 9px 10px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.cd-burger > .cd-burger-content > .cd-burger-header > .cd-burger-header-button > div {
+    width: 22px;
+    height: 2px;
+    border-radius: 1px;
+    background-color: #51B336;
+}
+
+.cd-burger > .cd-burger-content > .cd-burger-header > .cd-burger-header-button > div + div {
+    margin-top: 4px;
+}
+
+.cd-burger > .cd-burger-content > .cd-burger-header > .cd-burger-header-title {
+    overflow: hidden;
+    line-height: 49px;
+    padding-left: 10px;
+    font-size: 18px;
+}
+
+.cd-burger > .cd-burger-content > .cd-burger-body {
+    padding: 10px;
+}

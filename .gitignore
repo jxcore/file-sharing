@@ -1,0 +1,14 @@
+www/build/**
+public/shared_components/**
+public/bower_components/**
+public/modules.js
+
+node_modules/**
+npm-debug.log
+
+platforms/
+plugins/
+hooks/
+
+io.jxcore.node/
+io.jxcore.node.jx

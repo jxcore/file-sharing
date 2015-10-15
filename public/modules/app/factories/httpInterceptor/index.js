@@ -1,16 +1,14 @@
 angular
     .module(module.name)
-    .factory(current.name, ['$q', '$injector', '$location', '$rootScope', 'notify', function(q, injector, location, rootScope, notify) {
-        var loading = 0;
-
+    .factory(current.name, ['$q', '$injector', '$location', 'loadingSrvc', 'notify', function(q, injector, location, loadingSrvc, notify) {
         return {
             request: function (config) {
-                if(++loading === 1) rootScope.$broadcast('loading:progress');
+                loadingSrvc.push();
                 return config || $q.when(config);
             },
 
             response: function (response) {
-                if(--loading === 0) rootScope.$broadcast('loading:finish');
+                loadingSrvc.pull();
                 return response || $q.when(response);
             },
             
@@ -25,7 +23,7 @@ angular
                     break;
                 }
 
-                if(--loading === 0) rootScope.$broadcast('loading:finish');
+                loadingSrvc.pull();
                 return q.reject(response);
             }
         };

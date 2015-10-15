@@ -4,25 +4,29 @@ angular.module(module.name).provider(current.name, [function () {
     this.socket;
 
     this.broadcasts = [
-        'message:sent',
-        'message:received'
+        'file-added',
+        'file-removed'
     ];
 
-    this.$get = ['$q', '$rootScope', '$location', 'notify', function (q, rootScope, location, notify) {
-        var socket = this.socket || io.connect(':' + location.port(), {
+    this.$get = ['$q', '$rootScope', '$location', 'notify', 'host', 'loadingSrvc', function (q, rootScope, location, notify, host, loadingSrvc) {
+        var socket = this.socket || io.connect(host, {
             forceNew: true
         });
 
         this.broadcasts.forEach(function (name) {
             socket.on(name, function (data) {
-                rootScope.$broadcast(name, data);
+                rootScope.$apply(function () {
+                    rootScope.$broadcast(name, data);
+                });
             });
         });
 
         return {
             emit: function (name, data) {
                 var defered = q.defer();
+                loadingSrvc.push();
                 socket.emit(name, data, function (err, result) {
+                    loadingSrvc.pull();
                     if (err) {
                         console.error('ws error:', err);
                         defered.reject(err);

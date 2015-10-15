@@ -24,7 +24,7 @@ var app = angular
     if (typeof jxcore === 'undefined') {
         setTimeout(check, 5);
     } else if (jxcore === 'none' || cordova === 'none') {
-        init(window.location.origin);
+        init(window.location.origin, false);
     } else {
         jxcore.isReady(function () {
             jxcore('alert').register(alert);
@@ -33,7 +33,7 @@ var app = angular
                     alert(err);
                 } else {
                     jxcore('getHost').call(function (host) {
-                        init(host);
+                        init(host, true);
                     });
                 }
             });
@@ -41,7 +41,7 @@ var app = angular
     }
 })();
 
-function init(host) {
+function init(host, isMobile) {
     var s = document.createElement('script');
     s.async = false;
     s.src = host + '/socket.io/socket.io.js';
@@ -51,6 +51,7 @@ function init(host) {
         if (window.io) {
             app.value('enums', enums);
             app.value('host', host);
+            app.value('isMobile', isMobile);
             angular.bootstrap(document, [app.name]);
         } else {
             setTimeout(_check, 5);

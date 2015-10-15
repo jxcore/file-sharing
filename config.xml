@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="io.cordova.hellocordova" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Tic tac toe multiplayer game</name>
+    <name>file-sharing</name>
     <description>
-        Tic tac toe multiplayer game
+        File sharing app
     </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
+    <author email="kaxabernet@gmail.com" href="http://stackoverflow.com/users/1265753/karaxuna">
+        Kakhaber Bazerashvili
     </author>
     <content src="jxcore/build/index.html" />
     <plugin name="cordova-plugin-whitelist" version="1" />

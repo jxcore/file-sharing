@@ -16,189 +16,78 @@ app.use(express.static(staticFolderPath));
     });
 });
 
-function getSocketById(socketId) {
-    return io.sockets.sockets.filter(function (socket) {
-        return socket.id === socketId;
-    })[0];
+var files = [];
+
+function generateName(name) {
+    if (files.some(function (file) { return file.metadata.name === name; })) {
+        var s = '(',
+            e = ')';
+        var si = name.lastIndexOf(s);
+        var ei = name.lastIndexOf(e);
+        if (ei !== name.length - 1) {
+            return generateName(name + s + 1 + e);
+        } else {
+            var n = parseInt(name.substring(si + 1, ei));
+            return generateName(name.replace(s + n + e, s + (n + 1) + e));
+        }
+    } else {
+        return name;
+    }
 }
 
-function getGameById(gameId) {
-    return io.sockets.sockets.filter(function (socket) {
-        return socket.game && socket.game.id === gameId;
-    }).map(function (socket) {
-        return socket.game;
-    })[0];
-}
-
-function getGames() {
-    return io.sockets.sockets.filter(function (socket) {
-        return socket.game;
-    }).map(function (socket) {
-        return socket.game;
-    });
-}
 
 io.on('connection', function(socket) {
-    socket.on('error', function (err) {
-        console.log(err);
+    socket.on('getFileMetadatas', function (data, callback) {
+        callback(null, files.map(function (file) {
+            return file.metadata;
+        }));
     });
 
-    socket.on('create-game', function (game, callback) {
-        var game = {
-            id: '' + Date.now(),
-            maxPlayers: game.maxPlayers,
-            turnIndex: game.turnIndex,
-            width: game.width,
-            height: game.height,
-            winningScore: game.winningScore,
-            creator: socket.id,
-            players: [],
-            started: false
-        };
-        socket.game = game;
-        io.emit('game-created', game);
-        callback(null, game);
-    });
-
-    socket.on('get-games', function (data, callback) {
-        var games = io.sockets.sockets.map(function (_socket) {
-            return _socket.game;
-        }).filter(function (game) {
-            return game;
-        });
-        callback(null, games);
-    });
-
-    socket.on('enter-game', function (data, callback) {
-        var game = io.sockets.sockets.filter(function (_socket) {
-            return _socket.game && _socket.game.id === data.gameId;
-        }).map(function (_socket) {
-            return _socket.game;
-        })[0];
-
-        if (!game) {
-            callback('No game found with id: ' + data.gameId);
-        } else if (game.started) {
-            callback('Game has already started');
-        } else {
-            if (game.players.indexOf(socket.id) === -1) {
-                if (game.maxPlayers === game.players.length) {
-                    callback('Game is full of players');
-                } else {
-                    game.players.push(socket.id);
-                    io.emit('player-joined-game', {
-                        playerSocketId: socket.id,
-                        gameId: game.id
-                    });
-                }
-            }
-            callback(null, game);
-        }
-    });
-
-    socket.on('start-game', function (data, callback) {
-        var game = getGameById(data.gameId);
-        if (!game) {
-            callback('Game does not exist');
-        } else if (game.players.indexOf(socket.id) === -1) {
-            callback('You are not a player of this game');
-        } else {
-            game.started = true;
-            io.sockets.sockets.forEach(function (_socket) {
-                _socket.emit('game-started', {
-                    gameId: game.id,
-                    meIndex: game.players.indexOf(_socket.id)
-                });
-            });
-            callback();
-        }
-    });
-
-    socket.on('fill', function (data, callback) {
-        var game = getGameById(data.gameId);
-        if (!game) {
-            callback('Game not found');
-        } else if (game.players.indexOf(socket.id) === -1) {
-            callback('You are not playing this game');
-        } else {
-            game.players.forEach(function (playerSocketId) {
-                if (socket.id !== playerSocketId) {
-                    var playerSocket = getSocketById(playerSocketId);
-                    if (playerSocket) {
-                        playerSocket.emit('filled', {
-                            i: data.i,
-                            j: data.j,
-                            gameId: game.id
-                        });
-                    }
-                }
-            });
-            callback();
-        }
-    });
-
-    socket.on('leave-game', function (data, callback) {
-        if (socket.game) {
-            io.emit('game-discarded', {
-                gameId: socket.game.id
-            });
-            socket.game = null;
-        } else {
-            io.sockets.sockets.forEach(function (_socket) {
-                if (_socket.game) {
-                    var game = _socket.game;
-                    var players = game.players;
-                    players.splice(players.indexOf(socket.id), 1);
-                    if (game.players.length === 0) {
-                        _socket.game = null;
-                        io.emit('game-discarded', {
-                            gameId: game.id
-                        });
-                    } else {
-                        io.emit('player-left-game', {
-                            gameId: game.id,
-                            playerSocketId: socket.id
-                        });
-                    }
-                }
-            });
-        }
+    socket.on('addFile', function (file, callback) {
+        file.metadata.name = generateName(file.metadata.name);
+        files.push(file);
+        io.emit('file-added', file.metadata);
         callback(null);
     });
 
-    socket.broadcast.emit('player-connected', {
-        socketId: socket.id
-    });
-
-    socket.on('disconnect', function () {
-        if (socket.game) {
-            io.emit('game-discarded', {
-                gameId: socket.game.id
-            });
+    socket.on('getFile', function (data, callback) {
+        var file = utils.findOne(files, {
+            'metadata.name': data.name
+        });
+        if (!file) {
+            callbac('File does not exist');
         } else {
-            io.sockets.sockets.forEach(function (_socket) {
-                var game = _socket.game;
-                if (game) {
-                    var players = game.players;
-                    var playerIndex = players.indexOf(socket.id);
-                    if (playerIndex !== -1) {
-                        players.splice(playerIndex, 1);
-                        if (game.players.length === 0) {
-                            _socket.game = null;
-                            io.emit('game-discarded', {
-                                gameId: game.id
-                            });
-                        } else {
-                            io.emit('player-left-game', {
-                                gameId: game.id,
-                                playerSocketId: socket.id
-                            });
-                        }
-                    }
-                }
-            });
+            callback(null, file);
         }
     });
+
+    socket.on('removeFile', function (data, callback) {
+        var i, file;
+        for (i = 0; i < files.length; i++) {
+            file = files[i];
+            if (file.metadata.name === data.name) {
+                files.splice(i, 1);
+                io.emit('file-removed', file.metadata);
+                callback(null, file.metadata);
+                break;
+            }
+        }
+    });
+});
+
+app.get('/download/:name', function (req, res) {
+    var file = utils.findOne(files, {
+        'metadata.name': req.params.name
+    });
+    if (!file) {
+        res.status(404).send('File does not exist');
+    } else {
+        res.setHeader('Content-disposition', 'attachment; filename=' + file.metadata.name);
+        res.setHeader('Content-type', file.metadata.type);
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+        res.send(file.content);
+    }
 });
 
 var port = process.env.PORT || 8001;

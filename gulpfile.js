@@ -116,6 +116,11 @@ gulp.task('move-custom-fonts', function () {
         .pipe(gulp.dest(path.join(config.buildPath, 'fonts'))); 
 });
 
+gulp.task('move-bootstrap-fonts', ['install-bower-modules'], function () {
+    return gulp.src(path.join(config.publicPath, 'bower_components/bootstrap/fonts/**'))
+        .pipe(gulp.dest(path.join(config.buildPath, 'fonts')));
+});
+
 gulp.task('move-images', function () {
     return gulp.src(path.join(config.publicPath, 'img/**'))
         .pipe(gulp.dest(path.join(config.buildPath, 'img')));
@@ -126,7 +131,8 @@ gulp.task('build', [
     'build-html-assets',
     'move-ngpack-html',
     'move-custom-fonts',
-    'move-images'
+    'move-images',
+    'move-bootstrap-fonts'
 ], function (){
 
 });

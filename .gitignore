@@ -1,4 +1,4 @@
-www/build/**
+www/jxcore/build/**
 public/shared_components/**
 public/bower_components/**
 public/modules.js

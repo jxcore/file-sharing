@@ -1,0 +1,31 @@
+<table class="table">
+    <tr>
+        <td ng-bind="selected.toURL()"></td>
+    </tr>
+    <tr>
+        <td class="row">
+            <div class="col-xs-4">
+                <button class="btn btn-sm btn-primary btn-block" ng-click="back()">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                </button>
+            </div>
+            <div class="col-xs-4">
+                <button class="btn btn-sm btn-success btn-block" ng-click="done()">
+                    <span class="glyphicon glyphicon-ok"></span>
+                </button>
+            </div>
+            <div class="col-xs-4">
+                <button class="btn btn-sm btn-danger btn-block" ng-click="cancel()">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
+            </div>
+        </td>
+    </tr>
+    <tr ng-repeat="entry in entries | filter: { isDirectory: true }">
+        <td ng-click="enter(entry)">
+            <span class="glyphicon glyphicon-folder-open"></span>
+            &nbsp;
+            <span ng-bind="entry.name"></span>
+        </td>
+    </tr>
+</table>

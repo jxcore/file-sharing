@@ -4,7 +4,9 @@ var express = require('express'),
     io = require('socket.io')(http),
     env = app.get('env'),
     utils = require('./shared/js/utils'),
-    path = require('path');
+    async = require('./shared/js/async')
+    path = require('path'),
+    fs = require('fs');
 
 var isMobile = typeof Mobile !== 'undefined';
 var staticFolderPath = path.resolve(__dirname, env === 'development' && !isMobile ? '../../public' : './build');

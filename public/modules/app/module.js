@@ -3,7 +3,8 @@ var app = angular
         'ui.router',
         'ngResource',
         'ngSanitize',
-        'ngAnimate'
+        'ngAnimate',
+        'ui.bootstrap'
     ].concat(module.dependencies))
 	.config(['$stateProvider', '$urlRouterProvider','$locationProvider',
 		function(stateProvider, urlRouterProvider, locationProvider){

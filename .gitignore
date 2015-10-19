@@ -1,4 +1,5 @@
 www/jxcore/build/**
+www/jxcore/uploads/**
 public/shared_components/**
 public/bower_components/**
 public/modules.js

@@ -6,90 +6,152 @@ var express = require('express'),
     utils = require('./shared/js/utils'),
     async = require('./shared/js/async')
     path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    mime = require('mime'),
+    mkdirp = require('mkdirp');
 
 var isMobile = typeof Mobile !== 'undefined';
 var staticFolderPath = path.resolve(__dirname, env === 'development' && !isMobile ? '../../public' : './build');
 app.use(express.static(staticFolderPath));
 
+// serve jxcore and cordova files when not mobile
 ['jxcore', 'cordova'].forEach(function (name) {
     app.get('/' + name + '.js', function (req, res) {
         res.send('window.' + name + '="none";');
     });
 });
 
-var files = [];
+// path where files are uploaded
+var uploadsPath = path.resolve(__dirname, './uploads');
 
-function generateName(name) {
-    if (files.some(function (file) { return file.metadata.name === name; })) {
-        var s = '(',
-            e = ')';
-        var si = name.lastIndexOf(s);
-        var ei = name.lastIndexOf(e);
-        if (ei !== name.length - 1) {
-            return generateName(name + s + 1 + e);
-        } else {
-            var n = parseInt(name.substring(si + 1, ei));
-            return generateName(name.replace(s + n + e, s + (n + 1) + e));
+// log
+var logWhenMobile = true;
+function log(data) {
+    if (isMobile) {
+        if (logWhenMobile) {
+            Mobile('alert').call(JSON.stringify(data));
         }
-    } else {
-        return name;
+    } else if (env === 'development') {
+        console.dir(data);
     }
 }
 
+// create directory if not exists
+function readdir(dirPath, callback) {
+    mkdirp(dirPath, function (err) {
+        if (err) {
+            callback(err);
+        } else {
+            fs.readdir(dirPath, callback);
+        }
+    });
+}
+
+// if filePath directory does not exists, create one and then write file in it
+function writeFile(filePath, content, callback) {
+    var dirPath = filePath.substring(0, filePath.lastIndexOf(path.sep));
+    readdir(dirPath, function (err) {
+        if (err) {
+            callback(err);
+        } else {
+            fs.writeFile(filePath, content, callback);
+        }
+    });
+}
 
 io.on('connection', function(socket) {
     socket.on('getFileMetadatas', function (data, callback) {
-        callback(null, files.map(function (file) {
-            return file.metadata;
-        }));
+        readdir(uploadsPath, function (err, fileNames) {
+            if (err) {
+                log(err);
+                callback('Error reading uploads directory');
+            } else {
+                async.map(fileNames, function (fileName, cb) {
+                    var filePath = path.resolve(uploadsPath, fileName);
+                    fs.stat(filePath, function (err, stats) {
+                        if (err) {
+                            cb(err);
+                        } else {
+                            cb(null, {
+                                name: fileName,
+                                size: stats.size
+                            });
+                        }
+                    });
+                }, function (err, metadatas) {
+                    if (err) {
+                        console.log(err);
+                        callback('Error reading file');
+                    } else {
+                        callback(null, metadatas);
+                    }
+                });
+            }
+        });
     });
 
     socket.on('addFile', function (file, callback) {
-        file.metadata.name = generateName(file.metadata.name);
-        files.push(file);
-        io.emit('file-added', file.metadata);
-        callback(null);
+        var filePath = path.join(uploadsPath, file.metadata.name);
+        writeFile(filePath, file.content, function (err) {
+            if (err) {
+                log(err);
+                callback('Error writing file');
+            } else {
+                io.emit('file-added', file.metadata);
+                callback(null);
+            }
+        });
     });
 
     socket.on('getFile', function (data, callback) {
-        var file = utils.findOne(files, {
-            'metadata.name': data.name
+        var filePath = path.join(uploadsPath, data.name);
+        fs.readFile(filePath, function (err, file) {
+            if (err) {
+                log(err);
+                callback('Problem reading file');
+            } else {
+                callback(null, file);
+            }
         });
-        if (!file) {
-            callbac('File does not exist');
-        } else {
-            callback(null, file);
-        }
     });
 
     socket.on('removeFile', function (data, callback) {
-        var i, file;
-        for (i = 0; i < files.length; i++) {
-            file = files[i];
-            if (file.metadata.name === data.name) {
-                files.splice(i, 1);
-                io.emit('file-removed', file.metadata);
-                callback(null, file.metadata);
-                break;
+        var filePath = path.join(uploadsPath, data.name);
+        fs.unlink(filePath, function (err) {
+            if (err) {
+                log(err);
+                callback('Problem removing file');
+            } else {
+                var metadata = {
+                    name: data.name
+                };
+
+                io.emit('file-removed', metadata);
+                callback(null, metadata);
             }
-        }
+        });
     });
 });
 
 app.get('/download/:name', function (req, res) {
-    var file = utils.findOne(files, {
-        'metadata.name': req.params.name
+    var fileName = req.params.name;
+    var filePath = path.resolve(uploadsPath, fileName);
+    fs.readFile(filePath, function (err, file) {
+        if (err) {
+            if (err.code === 'ENOENT') {
+                res.status(404).send();
+            } else {
+                log(err);
+                res.status(500).send('Server error');
+            }
+        } else {
+            res.setHeader('Content-disposition', 'attachment; filename=' + fileName);
+            res.setHeader('Content-type', mime.lookup(fileName));
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+            res.send(file);
+        }
     });
-    if (!file) {
-        res.status(404).send('File does not exist');
-    } else {
-        res.setHeader('Content-disposition', 'attachment; filename=' + file.metadata.name);
-        res.setHeader('Content-type', file.metadata.type);
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-        res.send(file.content);
-    }
 });
 
 var port = process.env.PORT || 8001;

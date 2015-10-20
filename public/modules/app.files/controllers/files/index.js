@@ -3,23 +3,23 @@ angular.module(module.name).controller(module.name + '.c.' + current.name, [
     '$state',
     'host',
     'fileMetadatas',
-    'fileUpload',
+    'fileSrvc',
     
-    function (scope, state, host, fileMetadatas, fileUpload) {
+    function (scope, state, host, fileMetadatas, fileSrvc) {
         scope.host = host;
         scope.fileMetadatas = fileMetadatas;
         scope.file;
 
         scope.$watch('file', function (file) {
             if (file) {
-                fileUpload.upload(file).then(function () {
+                fileSrvc.upload(file).then(function () {
                     scope.file = null;
                 });
             }
         });
 
         scope.addFile = function () {
-            fileUpload.upload();
+            fileSrvc.upload();
         };
 
         scope.$on('file-added', function (e, fileMetadata) {
@@ -28,7 +28,7 @@ angular.module(module.name).controller(module.name + '.c.' + current.name, [
 
         scope.removeFile = function (fileName) {
             if (confirm('Sure?')) {
-                fileUpload.remove(fileName);
+                fileSrvc.remove(fileName);
             }
         };
 

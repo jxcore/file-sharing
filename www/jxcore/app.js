@@ -8,7 +8,8 @@ var express = require('express'),
     path = require('path'),
     fs = require('fs'),
     mime = require('mime'),
-    mkdirp = require('mkdirp');
+    mkdirp = require('mkdirp'),
+    multer = require('multer');
 
 var isMobile = typeof Mobile !== 'undefined';
 var staticFolderPath = path.resolve(__dirname, env === 'development' && !isMobile ? '../../public' : './build');
@@ -47,18 +48,6 @@ function readdir(dirPath, callback) {
     });
 }
 
-// if filePath directory does not exists, create one and then write file in it
-function writeFile(filePath, content, callback) {
-    var dirPath = filePath.substring(0, filePath.lastIndexOf(path.sep));
-    readdir(dirPath, function (err) {
-        if (err) {
-            callback(err);
-        } else {
-            fs.writeFile(filePath, content, callback);
-        }
-    });
-}
-
 io.on('connection', function(socket) {
     socket.on('getFileMetadatas', function (data, callback) {
         readdir(uploadsPath, function (err, fileNames) {
@@ -90,31 +79,6 @@ io.on('connection', function(socket) {
         });
     });
 
-    socket.on('addFile', function (file, callback) {
-        var filePath = path.join(uploadsPath, file.metadata.name);
-        writeFile(filePath, file.content, function (err) {
-            if (err) {
-                log(err);
-                callback('Error writing file');
-            } else {
-                io.emit('file-added', file.metadata);
-                callback(null);
-            }
-        });
-    });
-
-    socket.on('getFile', function (data, callback) {
-        var filePath = path.join(uploadsPath, data.name);
-        fs.readFile(filePath, function (err, file) {
-            if (err) {
-                log(err);
-                callback('Problem reading file');
-            } else {
-                callback(null, file);
-            }
-        });
-    });
-
     socket.on('removeFile', function (data, callback) {
         var filePath = path.join(uploadsPath, data.name);
         fs.unlink(filePath, function (err) {
@@ -130,6 +94,40 @@ io.on('connection', function(socket) {
                 callback(null, metadata);
             }
         });
+    });
+});
+
+var upload = multer({
+    storage: multer.diskStorage({
+        destination: function (req, file, cb) {
+            mkdirp(uploadsPath, function (err) {
+                if (err) {
+                    cb(err);
+                } else {
+                    cb(null, uploadsPath);
+                }
+            });
+        },
+
+        // ToDo: create unique file name (enumerate)
+        filename: function (req, file, cb) {
+            cb(null, file.originalname);
+        }
+    })
+});
+
+app.post('/upload', function (req, res) {
+    upload.single('file')(req, res, function(err) {
+        if(err) {
+            log(err);
+            callback('Error writing file');
+        } else {
+            io.emit('file-added', {
+                name: req.file.filename,
+                size: req.file.size
+            });
+            res.send();
+        }
     });
 });
 

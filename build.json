@@ -1,0 +1,8 @@
+{
+    "android": {
+        "release": {
+            "keystore": "build.keystore",
+            "alias": "file-sharing"
+        }
+    }
+}

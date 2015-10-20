@@ -1,3 +1,6 @@
+build.keystore
+Thumbs.db
+
 www/jxcore/build/**
 www/jxcore/uploads/**
 www/jxcore/node_modules/**

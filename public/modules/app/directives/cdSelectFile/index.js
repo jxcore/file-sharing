@@ -2,8 +2,14 @@ angular.module(module.name).directive(current.name, [function () {
     return {
         restrict: 'A',
         require: 'ngModel',
-        link: function (scope, element, attrs, ngModel) {
-            init();
+        transclude: true,
+        link: function (scope, element, attrs, ngModel, transclude) {
+            var transclElement;
+
+            transclude(scope, function (clone) {
+                transclElement = clone;
+                init();
+            });
 
             function change(e) {
                 var files = e.target.files,
@@ -21,7 +27,7 @@ angular.module(module.name).directive(current.name, [function () {
             }
 
             function init() {
-                element.empty();
+                element.empty().append(transclElement);
                 angular
                     .element('<input type="file"/>')
                     .on('change', change)

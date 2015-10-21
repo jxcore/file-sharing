@@ -1,7 +1,7 @@
 angular.module(module.name).provider(current.name, [function () {
     var self = this;
 
-    self.$get = ['$q', 'socketSrvc', 'loadingSrvc', function (q, socketSrvc, loadingSrvc) {
+    self.$get = ['$q', 'socketSrvc', 'loadingSrvc', 'host', function (q, socketSrvc, loadingSrvc, host) {
         return {
             upload: function (file) {
                 var fd = new FormData(),
@@ -12,14 +12,19 @@ angular.module(module.name).provider(current.name, [function () {
 
                 req.onload = function() {
                     loadingSrvc.pull();
-                    if (req.status == 200) {
+                    if (req.status === 200) {
                         defered.resolve(req);
                     } else {
                         defered.reject(req);
                     }
                 };
+                
+                req.onerror = function (err) {
+                    loadingSrvc.pull();
+                    defered.reject(err);
+                };
 
-                req.open('POST', '/upload');
+                req.open('POST', host + '/upload');
                 req.send(fd);
                 loadingSrvc.push();
                 return defered.promise;

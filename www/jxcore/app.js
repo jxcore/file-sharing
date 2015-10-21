@@ -15,6 +15,13 @@ var isMobile = typeof Mobile !== 'undefined';
 var staticFolderPath = path.resolve(__dirname, env === 'development' && !isMobile ? '../../public' : './build');
 app.use(express.static(staticFolderPath));
 
+// allow cross domain requests
+app.use(function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
 // serve jxcore and cordova files when not mobile
 ['jxcore', 'cordova'].forEach(function (name) {
     app.get('/' + name + '.js', function (req, res) {
@@ -145,8 +152,6 @@ app.get('/download/:name', function (req, res) {
         } else {
             res.setHeader('Content-disposition', 'attachment; filename=' + fileName);
             res.setHeader('Content-type', mime.lookup(fileName));
-            res.setHeader('Access-Control-Allow-Origin', '*');
-            res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
             res.send(file);
         }
     });

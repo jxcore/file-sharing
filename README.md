@@ -4,7 +4,7 @@
 ![Android](https://raw.githubusercontent.com/karaxuna/file-sharing/master/screens/app.png "Android")
 ![Browser](https://raw.githubusercontent.com/karaxuna/file-sharing/master/screens/browser.png "Browser")
 
-## Installation steps:
+## Install from [Google Play](https://play.google.com/store/apps/details?id=com.nubisa.file_sharing) or build yourself:
 
 Clone repository:
 
